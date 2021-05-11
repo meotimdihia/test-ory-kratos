@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  kratos-migrate:
+    image: oryd/kratos:v0.6.0-alpha.2
+    volumes:
+      - type: bind
+        source: ./ory
+        target: /etc/config/kratos
+    command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
+    restart: on-failure
+    networks:
+      - intranet
+      
+  kratos:
+    depends_on:
+      - kratos-migrate
+    image: oryd/kratos:v0.6.0-alpha.2
+    ports:
+      - '4433:4433' # public
+      - '4434:4434' # admin
+    restart: unless-stopped
+    environment:    
+      - LOG_LEVEL=trace
+    command: serve -c /etc/config/kratos/kratos.yaml --dev --watch-courier
+    volumes:
+      - type: bind
+        source: ./ory
+        target: /etc/config/kratos
+    networks:
+      - intranet
+      
+  kratos-selfservice-ui-node:
+    image: oryd/kratos-selfservice-ui-node:v0.6.0-alpha.2
+    environment:
+      - KRATOS_PUBLIC_URL=http://kratos:4433/
+      - KRATOS_ADMIN_URL=http://kratos:4434/
+    networks:
+      - intranet
+    restart: on-failure
+    
+networks:
+  intranet:
+  

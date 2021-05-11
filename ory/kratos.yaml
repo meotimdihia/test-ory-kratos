@@ -1,0 +1,109 @@
+version: v0.5.0-alpha.1
+
+dsn: "postgres://kratos:8bfcd2f4a91e8bfcd2f4a91e8bfcd2f4a91e@host.docker.internal:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4"
+
+serve:
+  public:
+    base_url: https://meotimdihia4433.loca.lt
+    #domain_aliases:
+    #  - match_domain: meotimdihia.loca.lt
+    #    base_path: /
+    #    scheme: https
+    cors:
+      enabled: true
+  admin:
+    base_url: http://kratos:4434/
+    
+    
+selfservice:
+  default_browser_return_url: https://meotimdihia.loca.lt/
+  whitelisted_return_urls:
+    - https://meotimdihia.loca.lt
+
+  methods:
+    password:
+      enabled: true
+    oidc:
+      enabled: true
+      config:
+        providers:
+          - id: google # this is `<provider-id>` in the Authorization callback URL. DO NOT CHANGE IT ONCE SET!
+            provider: google
+            client_id: '' # Replace this with the OAuth2 Client ID
+            client_secret: '' # Replace this with the OAuth2 Client secret
+            mapper_url: file:///etc/config/kratos/oidc.google.jsonnet
+            scope:
+              - email
+              - profile
+              # other supported scopes can be found in Google OAuth 2.0 dev docs
+            requested_claims:
+              id_token:
+                email:
+                  essential: true
+                email_verified:
+                  essential: true
+                given_name:
+                  essential: true
+                family_name: null
+                hd: null # If you want the G Suite domain
+  flows:
+    error:
+      ui_url: https://meotimdihia.loca.lt/error
+
+    settings:
+      ui_url: https://meotimdihia.loca.lt/settings
+      privileged_session_max_age: 15m
+
+    recovery:
+      enabled: true
+      ui_url: https://meotimdihia.loca.lt/recovery
+
+    verification:
+      enabled: true
+      ui_url: https://meotimdihia.loca.lt/verify
+      after:
+        default_browser_return_url: https://meotimdihia.loca.lt/
+
+    logout:
+      after:
+        default_browser_return_url: https://meotimdihia.loca.lt/auth/login
+
+    login:
+      ui_url: https://meotimdihia.loca.lt/auth/login
+      lifespan: 10m
+
+    registration:
+      lifespan: 10m
+      ui_url: https://meotimdihia.loca.lt/auth/registration
+      after:
+        password:
+          hooks:
+            -
+              hook: session
+
+log:
+  level: debug
+  format: text
+  leak_sensitive_values: true
+
+secrets:
+  cookie:
+    - PLEASE-CHANGE-ME-I-AM-VERY-INSECURE-BUT-I-AM-CHANGED-IT
+
+hashers:
+  argon2:
+    parallelism: 1
+    memory: 128MB
+    iterations: 2
+    salt_length: 16
+    key_length: 16
+
+identity:
+  default_schema_url: file:///etc/config/kratos/identity.schema.json
+
+courier:
+  smtp:
+    connection_uri: 
+    from_name: Comick
+    from_address: noreply@example.com
+    
